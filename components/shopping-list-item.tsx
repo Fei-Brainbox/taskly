@@ -2,43 +2,47 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, Pressable } from 'reac
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import { theme } from '../theme';
+import { ItemType } from './types/types';
+import { router } from 'expo-router';
 
 type Props = {
-    id: string;
-    name: string;
-    completedAt: number | null;
+    item: ItemType;
     onDelete: () => void;
-    toggleComplete: () => void;
 }
 
-export function ShoppingListItem({ id, name, completedAt, onDelete, toggleComplete }: Props) {
+export function ShoppingListItem({ item, onDelete }: Props) {
     const handleDelete = () => {
         Alert.alert(
         'Delete Item',
-        `Are you sure you want to delete ${name}?`,
+        `Are you sure you want to delete ${item.name}?`,
         [
             { text: 'Cancel', style: 'cancel' },
             { text: 'OK', onPress: () => {onDelete()} }
         ]
         );
-  }
+    }
+
+    const gotoTask = () => {
+        console.log('navigations to item', item.id);
+        router.push(`/counter/${item.id}`);
+    }
 
   return (
     <Pressable 
-        style={[styles.itemContainer, completedAt ? { backgroundColor: 'lightgreen' } : {}]}
-        onPress={toggleComplete}    
+        style={[styles.itemContainer, item.completedAt ? { backgroundColor: 'lightgreen' } : {}]}
+        onPress={gotoTask}    
     >   
     <View style={styles.row}>
         {
         <Entypo 
-            name={completedAt ? "check" : "circle"}
+            name={item.completedAt ? "check" : "circle"}
             size={16} 
-            color={completedAt ? "green" : "gray"} />
+            color={item.completedAt ? "green" : "gray"} />
         }
         <Text 
             numberOfLines={1}
             style={[styles.text]}>
-            {name}
+            {item.name}
         </Text>
     </View>
         

@@ -1,24 +1,18 @@
 import { StyleSheet, View, TextInput, FlatList, Text, LayoutAnimation } from 'react-native';
-import { ShoppingListItem } from '../components/shopping-list-item';
+import { ItemType } from '../../components/types/types';
+import { ShoppingListItem as ShoppingListItemComponent } from '../../components/shopping-list-item';
 import { useEffect, useState } from 'react';
-import { saveItem, getItem } from './utils/shopping-list-storage';
+import { saveItem, getItems } from '../../utils/shopping-list-storage';
 import * as Haptics from 'expo-haptics';
 
-export type ShoppingListItem = {
-    id: string;
-    name: string;
-    completedAt: number | null;
-};
 const SHOPPING_LIST_KEY = 'shoppingList';
-
-
 export default function Index() {
-  const [items, setItems] = useState<ShoppingListItem[]>([]);
+  const [items, setItems] = useState<ItemType[]>([]);
   const [value, setValue] = useState('');
 
   useEffect(() => {
     const loadItems = async () => {
-      const savedItems = await getItem(SHOPPING_LIST_KEY);
+      const savedItems = await getItems(SHOPPING_LIST_KEY);
       if (savedItems) {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setItems(savedItems);
@@ -33,9 +27,8 @@ export default function Index() {
         setValue('');
         return;
       };
-      
       const newList = [
-        {id: new Date().getTime().toString(), name: value, completedAt: null}, 
+        {id: new Date().getTime().toString(), name: value, completedAt: null, workingTime: 0}, 
         ...items
       ];
       setItems(newList);
@@ -50,14 +43,6 @@ export default function Index() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setItems(afterDeletion);
     saveItem(SHOPPING_LIST_KEY, afterDeletion);
-  }
-
-  const handleToggleComplete = (id: string) => {
-    const updatedItems = items.map(item => item.id === id ? { ...item, completedAt: item.completedAt ? null : new Date().getTime() } : item);
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setItems(updatedItems);
-    saveItem(SHOPPING_LIST_KEY, updatedItems);
   }
   
   return (
@@ -83,12 +68,9 @@ export default function Index() {
         </View>
       )}
       renderItem={({ item }) => {
-        return <ShoppingListItem 
-          id={item.id} 
-          name={item.name} 
-          completedAt={item.completedAt} 
+        return <ShoppingListItemComponent 
+          item={item}
           onDelete={() => handleDeleteItem(item.id)} 
-          toggleComplete={() => handleToggleComplete(item.id)} 
         />
       }}
       
@@ -96,7 +78,7 @@ export default function Index() {
   );
 }
 
-function orderShoppingList(shoppingList: ShoppingListItem[]) {
+function orderShoppingList(shoppingList: ItemType[]) {
   return shoppingList.sort((item1, item2) => {
     if (item1.completedAt && item2.completedAt) {
       return item2.completedAt - item1.completedAt;

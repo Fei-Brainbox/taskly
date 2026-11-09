@@ -8,7 +8,7 @@ export async function saveItem(key: string, data: object) {
     }
 }
 
-export async function getItem(key: string) {
+export async function getItems(key: string) {
     try {
         const value = await AsyncStorage.getItem(key);
         return value ? JSON.parse(value) : null;
